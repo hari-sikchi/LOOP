@@ -1,0 +1,31 @@
+# MPC controller configuration
+mpc_config:
+    horizon: 5 # how long of the horizon to predict
+    reward_horizon: 5
+    gamma: 0.99              # reward discount coefficient
+    exploration_noise: 0.0
+    CEM:
+        popsize: 200               # how many random samples for mpc
+        particles: 4                # number of particles to enlarge
+        actor_mix: 5
+        max_iters: 5
+        num_elites: 20
+        epsilon: 0.001 # for 0.003, it will has +- 0.05 error rate with 0.05 prob when converges
+        alpha: 0.1 # weights for previous mean and var
+
+    ARC:                        
+        popsize: 100            # how many random samples for mpc
+        particles: 4            # number of particles to enlarge
+        max_iters: 5
+        alpha: 0.1              # weights for previous mean and var
+        mixture_coefficient: 0.05
+        kappa: 1
+
+
+sac_config:
+  evaluation_mode: 'none' #[actor,critic]
+
+
+dynamics_config:
+    hidden_dim: 200
+

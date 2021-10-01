@@ -1,0 +1,27 @@
+# MPC controller configuration
+mpc_config:
+    horizon: 3               
+    gamma: 0.99              # discount factor
+    exploration_noise: 0.0
+    CEM:
+        popsize: 100            # population size for mpc
+        particles: 4            # number of particles to clone
+        actor_mix: 5
+        max_iters: 5 
+        num_elites: 20
+        alpha: 0.1              # weights for previous mean and var
+        mixture_coefficient: 0.05
+    ARC:                        
+        popsize: 100            # how many random samples for mpc
+        particles: 4            # number of particles to enlarge
+        max_iters: 5
+        alpha: 0.1              # weights for previous mean and var
+        mixture_coefficient: 0.05
+        kappa: 1
+
+sac_config:
+  evaluation_mode: 'actor' #[actor, None]
+
+
+dynamics_config:
+    hidden_dim: 200 

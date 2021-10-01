@@ -1,0 +1,35 @@
+# MPC controller configuration
+mpc_config:
+    horizon: 5            
+    gamma: 0.99              # reward discount coefficient
+    exploration_noise: 0.0
+    CEM:
+        popsize: 100            # how many random samples for mpc
+        particles: 4            # number of particles to enlarge
+        actor_mix: 5
+        max_iters: 5 
+        num_elites: 20
+        alpha: 0.1              # weights for previous mean and var
+    ARC:                        
+        popsize: 100            # how many random samples for mpc
+        particles: 4            # number of particles to enlarge
+        max_iters: 5
+        alpha: 0.1              # weights for previous mean and var
+        mixture_coefficient: 0.05
+        kappa: 1
+
+
+
+sac_config:
+  evaluation_mode: 'actor' #[actor,None]
+
+
+dynamics_config:
+    n_ensemble: 5
+    data_split: 0.8
+    train_iters: 100
+    lr: 0.001
+    hidden_units: [200,200, 200,200]
+    batch_size: 256
+    activation: relu
+    save: false
