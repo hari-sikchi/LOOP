@@ -67,7 +67,6 @@ class SafetyGymEnv():
         self.xyz_sensors = XYZ_SENSORS[self.robot]
         self.angle_sensors = ANGLE_SENSORS[self.robot]
         self.constraints_name = CONSTRAINTS[self.task]
-        #self.distance_name = ["goal_dist"] + [x+"_dist" for x in self.constraints_name]
 
         self.base_state_name = self.xyz_sensors + self.angle_sensors
         self.flatten_order = self.base_state_name + ["goal"] + self.constraints_name #+ self.distance_name
@@ -75,11 +74,6 @@ class SafetyGymEnv():
         # get state space vector size
         self.env.reset()
         obs = self.get_obs()
-        # import ipdb;ipdb.set_trace()
-        #print(obs)
-        # for i in obs.values():
-        #     print(i.shape)
-
         self.obs_flat_size = sum([np.prod(i.shape) for i in obs.values()])
         self.state_dim = self.obs_flat_size
         if self.config.stack_obs:
@@ -110,18 +104,14 @@ class SafetyGymEnv():
     
     def step(self, action):
         # 2 dimensional numpy array, [vx, w]
-        
         reward = 0
         cost = 0
-
         if self.config.stack_obs:
             cat_obs = np.zeros(self.config.action_repeat*self.obs_flat_size)
 
         for k in range(self.config.action_repeat):
             control = action
             state, reward_k, done, info = self.env.step(control)
-            # if self.config.use_dist_reward:
-            #     reward_k = self.get_dist_reward()
             reward += reward_k
             cost += info["cost"]
             self.t += 1    # Increment internal timer
@@ -135,8 +125,6 @@ class SafetyGymEnv():
                     for j in range(k+1,self.config.action_repeat):
                         cat_obs[j*self.obs_flat_size :(j+1)*self.obs_flat_size] = observation 
                 break
-        # cost = 1 if cost>0 else 0
-
         info = {"cost":cost, "goal_met":goal_met}
         if self.config.stack_obs:
             return cat_obs, reward, done, info
@@ -159,19 +147,10 @@ class SafetyGymEnv():
 
     def get_cost(self, obs):
         N = obs.shape[0]
-        # vases_pos_list = self.env.vases_pos # list of shape (3,) ndarray
         hazards_pos_list = self.env.hazards_pos # list of shape (3,) ndarray
-        # ego_vases_pos_list = [self.env.ego_xy(pos[:2]) for pos in vases_pos_list] # list of shape (2,) ndarray
         ego_hazards_pos_list = [self.env.ego_xy(pos[:2]) for pos in hazards_pos_list] # list of shape (2,) ndarray
         
-        # vases_key = self.key_to_slice['vases']
         hazards_key = self.key_to_slice['hazards']
-
-        # vases_obs = obs[vases_key].reshape(-1,2)
-        # hazard_obs = obs[hazards_key].reshape(-1,2)
-        # # vases_dist = np.sqrt(np.sum(np.square(vases_obs),axis=1)).reshape(-1,1)
-        # hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=1)).reshape(-1,1)
-        # cost = ((hazards_dist<self.env.hazards_size)*(self.env.hazards_size-hazards_dist)).sum() * 10
 
         hazard_obs = obs[:,hazards_key].reshape(N,-1,2)
         hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=2)).reshape(N,-1)
@@ -181,19 +160,10 @@ class SafetyGymEnv():
 
     def get_observation_cost(self, obs):
         N = obs.shape[0]
-        # vases_pos_list = self.env.vases_pos # list of shape (3,) ndarray
         hazards_pos_list = self.env.hazards_pos # list of shape (3,) ndarray
-        # ego_vases_pos_list = [self.env.ego_xy(pos[:2]) for pos in vases_pos_list] # list of shape (2,) ndarray
         ego_hazards_pos_list = [self.env.ego_xy(pos[:2]) for pos in hazards_pos_list] # list of shape (2,) ndarray
         
-        # vases_key = self.key_to_slice['vases']
         hazards_key = self.key_to_slice['hazards']
-
-        # vases_obs = obs[vases_key].reshape(-1,2)
-        # hazard_obs = obs[hazards_key].reshape(-1,2)
-        # # vases_dist = np.sqrt(np.sum(np.square(vases_obs),axis=1)).reshape(-1,1)
-        # hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=1)).reshape(-1,1)
-        # cost = ((hazards_dist<self.env.hazards_size)*(self.env.hazards_size-hazards_dist)).sum() * 10
 
         hazard_obs = obs[:,hazards_key].reshape(N,-1,2)
         hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=2)).reshape(N,-1)
@@ -250,103 +220,11 @@ class SafetyGymEnv():
     def get_obs_flatten(self):
         # get the flattened obs
         self.obs = self.get_obs()
-        #obs_flat_size = sum([np.prod(i.shape) for i in obs.values()])
         flat_obs = np.zeros(self.obs_flat_size)
-        # import ipdb;ipdb.set_trace()
         for k in self.flatten_order:
             idx = self.key_to_slice[k]
             flat_obs[idx] = self.obs[k].flat
         return flat_obs
-
-    def get_dist_reward(self):
-        '''
-        @return reward: negative distance from robot to the goal
-        '''
-        return -self.env.dist_goal()
-
-    @property
-    def observation_size(self):
-        return self.state_dim
-
-    @property
-    def action_size(self):
-        return self.env.action_space.shape[0]
-
-    @property
-    def action_range(self):
-        return float(self.env.action_space.low[0]), float(self.env.action_space.high[0])
-
-    # Sample an action randomly from a uniform distribution over all valid actions
-    def sample_random_action(self):
-        return self.env.action_space.sample()
-
-class SafetyGymAREnv():
-    def __init__(self, robot='Point', task='Goal', level=1, seed=0, config=DEFAULT_CONFIG):
-        self.robot = robot.capitalize()
-        self.task = task.capitalize()
-        assert self.robot in ROBOTS, "can not recognize the robot type {}".format(robot)
-        assert self.task in TASKS, "can not recognize the task type {}".format(task)
-        self.config = Dict2Obj(config)
-        env_name = 'Safexp-'+self.robot+self.task+str(level)+'-v0'
-        print("Creating environment: ", env_name)
-        self.env = gym.make(env_name)
-        self.env.seed(seed)
-
-        print("Environment configuration: ", self.config)
-        # self.init_sensor()
-        
-         #for uses with ppo in baseline
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
-        self._max_episode_steps = config['max_episode_length']/config['action_repeat']
-
-
-    def reset(self):
-        self.t = 0    # Reset internal timer
-        obs = self.env.reset()
-        return obs
-    
-    def step(self, action):
-        # 2 dimensional numpy array, [vx, w]
-        
-        reward = 0
-        cost = 0
-
-        for k in range(self.config.action_repeat):
-            control = action
-            state, reward_k, done, info = self.env.step(control)
-            if self.config.use_dist_reward:
-                reward_k = self.get_dist_reward()
-            reward += reward_k
-            cost += info["cost"]
-            self.t += 1    # Increment internal timer
-            observation = state
-            goal_met = ("goal_met" in info.keys()) # reach the goal
-            done = done or self.t == self.config.max_episode_length
-            if done or goal_met:
-                break
-        
-
-        # cost = 1 if cost>0 else 0
-
-        info = {"cost":cost, "goal_met":goal_met}
-
-        return observation, reward, done, info
-
-    def render(self):
-        self.env.render()
-
-    def close(self):
-        self.env.close()
-
-    def recenter(self, pos):
-        ''' Return the egocentric XY vector to a position from the robot '''
-        return self.env.ego_xy(pos)
-
-    def dist_xy(self, pos):
-        ''' Return the distance from the robot to an XY position, 3 dim or 2 dim '''
-        return self.env.dist_xy(pos)
-
 
     def get_dist_reward(self):
         '''
