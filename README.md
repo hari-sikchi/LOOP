@@ -1,7 +1,12 @@
 # LOOP: Learning Off-Policy with Online Planning
 Accepted in Conference of Robot Learning (CoRL) 2021. 
 
+<p align="center"> Harshit Sikchi, &nbsp; Wenxuan Zhou, &nbsp; David Held </p>
 
+<p align="center">
+  <img src='loop.png' width="600"/><br>
+   <a href="https://arxiv.org/abs/2008.10066">Paper</a> <!--, &nbsp; <a href="">blog post</a> -->
+</p>
 
 ## Install
 - PyTorch 1.5
