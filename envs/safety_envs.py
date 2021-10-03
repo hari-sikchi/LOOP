@@ -39,7 +39,6 @@ class Dict2Obj(object):
     def __repr__(self):
         return "%s" % self.__dict__
 
-
 class SafetyGymEnv():
     def __init__(self, robot='Point', task='Goal', level=1, seed=0, config=DEFAULT_CONFIG):
         self.robot = robot.capitalize()
@@ -136,6 +135,7 @@ class SafetyGymEnv():
                     for j in range(k+1,self.config.action_repeat):
                         cat_obs[j*self.obs_flat_size :(j+1)*self.obs_flat_size] = observation 
                 break
+        # cost = 1 if cost>0 else 0
 
         info = {"cost":cost, "goal_met":goal_met}
         if self.config.stack_obs:
@@ -157,14 +157,43 @@ class SafetyGymEnv():
         ''' Return the distance from the robot to an XY position, 3 dim or 2 dim '''
         return self.env.dist_xy(pos)
 
+    def get_cost(self, obs):
+        N = obs.shape[0]
+        # vases_pos_list = self.env.vases_pos # list of shape (3,) ndarray
+        hazards_pos_list = self.env.hazards_pos # list of shape (3,) ndarray
+        # ego_vases_pos_list = [self.env.ego_xy(pos[:2]) for pos in vases_pos_list] # list of shape (2,) ndarray
+        ego_hazards_pos_list = [self.env.ego_xy(pos[:2]) for pos in hazards_pos_list] # list of shape (2,) ndarray
+        
+        # vases_key = self.key_to_slice['vases']
+        hazards_key = self.key_to_slice['hazards']
+
+        # vases_obs = obs[vases_key].reshape(-1,2)
+        # hazard_obs = obs[hazards_key].reshape(-1,2)
+        # # vases_dist = np.sqrt(np.sum(np.square(vases_obs),axis=1)).reshape(-1,1)
+        # hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=1)).reshape(-1,1)
+        # cost = ((hazards_dist<self.env.hazards_size)*(self.env.hazards_size-hazards_dist)).sum() * 10
+
+        hazard_obs = obs[:,hazards_key].reshape(N,-1,2)
+        hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=2)).reshape(N,-1)
+        cost = ((hazards_dist<self.env.hazards_size)*(self.env.hazards_size-hazards_dist)).sum(1) * 10
+
+        return cost
+
     def get_observation_cost(self, obs):
         N = obs.shape[0]
-
+        # vases_pos_list = self.env.vases_pos # list of shape (3,) ndarray
         hazards_pos_list = self.env.hazards_pos # list of shape (3,) ndarray
-
+        # ego_vases_pos_list = [self.env.ego_xy(pos[:2]) for pos in vases_pos_list] # list of shape (2,) ndarray
         ego_hazards_pos_list = [self.env.ego_xy(pos[:2]) for pos in hazards_pos_list] # list of shape (2,) ndarray
-
+        
+        # vases_key = self.key_to_slice['vases']
         hazards_key = self.key_to_slice['hazards']
+
+        # vases_obs = obs[vases_key].reshape(-1,2)
+        # hazard_obs = obs[hazards_key].reshape(-1,2)
+        # # vases_dist = np.sqrt(np.sum(np.square(vases_obs),axis=1)).reshape(-1,1)
+        # hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=1)).reshape(-1,1)
+        # cost = ((hazards_dist<self.env.hazards_size)*(self.env.hazards_size-hazards_dist)).sum() * 10
 
         hazard_obs = obs[:,hazards_key].reshape(N,-1,2)
         hazards_dist = np.sqrt(np.sum(np.square(hazard_obs),axis=2)).reshape(N,-1)
@@ -297,6 +326,9 @@ class SafetyGymAREnv():
             if done or goal_met:
                 break
         
+
+        # cost = 1 if cost>0 else 0
+
         info = {"cost":cost, "goal_met":goal_met}
 
         return observation, reward, done, info

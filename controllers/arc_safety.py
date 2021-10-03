@@ -16,7 +16,7 @@ class safeARC(object):
         # params
         ###########
         self.horizon = 5 # Hyperparam search [5,8]
-        self.reward_horizon = 5 
+        self.reward_horizon = 8 
         self.N = 100 # Hyperparam search [100,400]
         self.models = models
         self.env = copy.deepcopy(env)
@@ -35,7 +35,7 @@ class safeARC(object):
         self.termination_function=termination_function
         self.particles = 4
         self.safety_threshold = 0.2
-        self.minimal_elites = 5
+        self.minimal_elites = 10
         self.kappa = 1
 
     def reset(self):
@@ -75,7 +75,7 @@ class safeARC(object):
         X = stats.truncnorm(-2, 2, loc=np.zeros_like(mean), scale= np.ones_like(mean))
 
         t = 0
-        while (1):
+        while (t < self.max_iters):
             lb_dist, ub_dist = mean - self.lb, self.ub - mean
             
             constrained_var = np.minimum(np.minimum(np.square(lb_dist / 2), np.square(ub_dist / 2)), var)
@@ -184,7 +184,7 @@ class safeCEM(object):
         # params
         ###########
         self.horizon = 5 # Hyperparam search [5,8]
-        self.reward_horizon = 5 
+        self.reward_horizon = 8 
         self.N = 100 # Hyperparam search [100,400]
         self.models = models
         self.env = copy.deepcopy(env)
@@ -202,7 +202,7 @@ class safeCEM(object):
         self.mean = np.zeros((self.sol_dim,))
         self.termination_function=termination_function
         self.particles = 4
-        self.safety_threshold = 0.2
+        self.safety_threshold = 0.0
         self.minimal_elites = 5
 
     def reset(self):

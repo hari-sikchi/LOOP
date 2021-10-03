@@ -58,7 +58,7 @@ class SAC:
             steps_per_epoch=4000, epochs=100, replay_size=int(1e6), gamma=0.99, 
             polyak=0.995, lr=1e-3, alpha=0.2, batch_size=256, start_steps=10000, 
             update_after=1000, update_every=50, num_test_episodes=10, max_ep_len=1000,automatic_alpha_tuning=True, 
-            save_freq=1, A2=False):
+            save_freq=1, A2=False, use_bc_loss=False):
         """
         Soft Actor-Critic (SAC)
 
@@ -210,6 +210,7 @@ class SAC:
             self.alpha = self.log_alpha.exp()
         else:
             self.alpha = alpha
+        self.use_bc_loss = use_bc_loss
 
 
     # Set up function for computing SAC Q-losses
@@ -269,11 +270,14 @@ class SAC:
         q1_pi = self.ac.q1(o, pi)
         q2_pi = self.ac.q2(o, pi)
         q_pi = torch.min(q1_pi, q2_pi)
-        # Entropy-regularized policy loss
-        loss_pi = (self.alpha * logp_pi - q_pi).mean()
-        # lmbda = 2.5/q_pi.abs().mean().detach()
-        # loss_pi = (self.alpha * logp_pi - q_pi).mean() * lmbda + F.mse_loss(pi,a)
-
+        if self.use_bc_loss: 
+            # BC loss inspired from TD3_BC offline RL algorithm
+            # Refer https://github.com/sfujim/TD3_BC
+            lmbda = 2.5/q_pi.abs().mean().detach()
+            loss_pi = (self.alpha * logp_pi - q_pi).mean() * lmbda + F.mse_loss(pi,a)
+        else:
+            # Entropy-regularized policy loss
+            loss_pi = (self.alpha * logp_pi - q_pi).mean()
 
         pi_info = dict(LogPi=logp_pi.cpu().detach())
 

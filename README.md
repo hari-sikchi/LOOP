@@ -1,5 +1,5 @@
 # LOOP: Learning Off-Policy with Online Planning
-Accepted in CoRL 2021. 
+Accepted in Conference of Robot Learning (CoRL) 2021. 
 
 
 
@@ -32,7 +32,7 @@ Accepted in CoRL 2021.
 
 ### Sec 6.1 LOOP for Online RL
 ```
-python train_loop_sac.py --env=<env_name> --policy=LOOP_SAC_ARC --exp_name=<location_to_logs> 
+python train_loop_sac.py --env=<env_name> --policy=LOOP_SAC_ARC --start_timesteps=<initial exploration steps> --exp_name=<location_to_logs> 
 ```
 Environments wrappers with their termination condition can be found under `envs/`
 
@@ -60,9 +60,12 @@ Safety environments can be found under `envs/safety_envs.py`
 Parts of the codes are used from the references mentioned below:
 
 
+```
 @article{SpinningUp2018,
     author = {Achiam, Joshua},
     title = {{Spinning Up in Deep Reinforcement Learning}},
     year = {2018}
 }
 
+https://github.com/Xingyu-Lin/mbpo_pytorch
+```

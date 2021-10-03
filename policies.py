@@ -107,6 +107,8 @@ def get_policy(all_args, env, replay_buffer, config, policy_name='LOOP_SAC',env_
         policy.max_iters = mpc_config['ARC']['max_iters']
         policy.alpha = mpc_config['ARC']['alpha'] 
         policy.kappa = mpc_config['ARC']['kappa'] 
+        if 'reward_horizon' in mpc_config['ARC'].keys():
+            policy.reward_horizon = mpc_config['ARC']['reward_horizon']
 
     lookahead_policies=['LOOP_SAC_ARC','LOOP_OFFLINE_ARC','safeLOOP_CEM','safeLOOP_ARC']
 
