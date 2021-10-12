@@ -183,7 +183,7 @@ def run_loop(args):
             dynamics_trainloss,dynamics_valloss = dynamics.train()
             logger.store(DynamicsTrainLoss = dynamics_trainloss, DynamicsValLoss = dynamics_valloss)
 
-        # This was above dynamics training when everything was wokring fine
+
         if args.policy in lookahead_policies:
             if t >= args.start_timesteps and t%sac_policy.update_every==0:
                 sac_policy.train()
