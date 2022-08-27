@@ -61,16 +61,17 @@ Safety environments can be found under `envs/safety_envs.py`
 
 
 
-## References
-Parts of the codes are used from the references mentioned below:
-
-
+## Citing
+If you find this work useful, please use the following citation:
 ```
-@article{SpinningUp2018,
-    author = {Achiam, Joshua},
-    title = {{Spinning Up in Deep Reinforcement Learning}},
-    year = {2018}
+@inproceedings{sikchi2022learning,
+  title={Learning off-policy with online planning},
+  author={Sikchi, Harshit and Zhou, Wenxuan and Held, David},
+  booktitle={Conference on Robot Learning},
+  pages={1622--1633},
+  year={2022},
+  organization={PMLR}
 }
-
-https://github.com/Xingyu-Lin/mbpo_pytorch
 ```
+
+
